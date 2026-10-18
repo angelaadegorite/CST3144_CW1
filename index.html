@@ -13,6 +13,8 @@
             <h2>{{ lesson.subject }}</h2>
             <p>Location: {{ lesson.location }}</p>
             <p>Price: AED {{ lesson.price }}</p>
+            <button v-on:click="addToCart" v-bind:disabled="!canAddToCart">Add to Cart</button>
+            <p>Items in cart: {{ cart.length }}</p>
             <p>Spaces: {{ lesson.availability }}</p>
         </div>
     </div>
@@ -28,6 +30,18 @@
                     location: 'Dubai',
                     price: 100,
                     availability: 5
+                },
+                cart: []
+            },
+            methods: {
+                addToCart() {
+                    this.cart.push(this.lesson.id);
+                    this.lesson.availability--;
+                }
+            },
+            computed: {
+                canAddToCart() {
+                    return this.lesson.availability > 0;
                 }
             }
         });
