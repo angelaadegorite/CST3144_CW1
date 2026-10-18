@@ -2,9 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>After School Lessons</title>
+    <title>Angie's After School Lessons</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
 </head>
 <body>
-    <h1>After School Lessons</h1>
+    <div id="app">
+        <h1>{{ header }}</h1>
+
+        <div class="lesson">
+            <h2>{{ lesson.subject }}</h2>
+            <p>Location: {{ lesson.location }}</p>
+            <p>Price: AED {{ lesson.price }}</p>
+            <p>Spaces: {{ lesson.availability }}</p>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                header: 'After School Lessons',
+                lesson: {
+                    id: 1001,
+                    subject: 'Maths',
+                    location: 'Dubai',
+                    price: 100,
+                    availability: 5
+                }
+            }
+        });
+    </script>
 </body>
 </html>
