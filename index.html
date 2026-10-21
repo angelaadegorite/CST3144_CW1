@@ -2,80 +2,75 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Angela's Activity Room</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
-    <script src="lessons.js"></script>
+    <script src="lesson.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="app">
-         <!-- Navigation bar -->
+        <!-- Navigation bar -->
         <div class="navbar">
-           <div class="logo">
-            <h2>{{header}}</h2>
-             </div>
-        <!-- This section defines a search bar within the navigation area -->
-        <div class="nav-items">
-            <!-- Container for search functionality -->
-            <div class="search">
-                <!-- Input field for entering search terms -->
-                <input type="text" placeholder="Search Lessons" class="search-bar" v-model="searchTerm"> 
-                <!-- Button to initiate the search -->  
-                <button class="search-button">Search</button> 
-           </div>
+            <div class="logo">
+                <h2>{{header}}</h2>
+            </div>
+
+            <div class="nav-items">
+                <div class="search">
+                    <!-- Results filter live as you type (v-model), so the button is optional -->
+                    <input type="text" placeholder="Search Lessons" class="search-bar" v-model="searchTerm">
+                    <button class="search-button">Search</button>
+                </div>
+            </div>
+
+            <!-- One button that toggles between the lessons page and the cart page -->
+            <div class="cart-buttons">
+                <button class="show-checkout" v-on:click="toggleView" :disabled="showLessons && cart.length === 0">
+                    {{ showLessons ? 'View Cart (' + cart.length + ')' : 'Back to Lessons' }}
+                </button>
+            </div>
         </div>
-        <!-- Cart buttons section -->
-        <div class="cart-buttons">
-            <!-- Show checkout button if cart has items -->
-            <button class="show-checkout" v-on:click="showCheckout" v-if="cartItemCount >= 1">View Cart ({{cartItemCount}})</button>
-            <!-- Show checkout button if 'showLessons' flag is true -->
-            <button class="show-checkout" v-else-if="showLessons">View Cart ({{cartItemCount}})</button>
-            <!-- Disable the button if neither condition is met -->
-            <button class="show-checkout" v-else disabled>View Cart ({{cartItemCount}})</button>
-           </div>
-        </div>
-        
-        
-       
+
+        <!-- Lessons page -->
         <div class="show-lesson" v-if="showLessons">
             <section class="sort-section">
                 <div class="sort">
                     <h2>Apply Filters</h2>
-                    
+
                     <div class="criteria">
-                        <input type="checkbox" name="By Subject" id="" v-model="sortBySubject">
-                        <span class="checkbox-text">By Subject</span> 
+                        <input type="checkbox" id="sortSubject" v-model="sortBySubject">
+                        <label for="sortSubject" class="checkbox-text">By Subject</label>
                     </div>
                     <div class="criteria">
-                        <input type="checkbox" name="By Location" id="" v-model="sortByLocation"> 
-                        <span class="checkbox-text">By Location</span> 
+                        <input type="checkbox" id="sortLocation" v-model="sortByLocation">
+                        <label for="sortLocation" class="checkbox-text">By Location</label>
                     </div>
                     <div class="criteria">
-                        <input type="checkbox" name="By Price" id="" v-model="sortByPrice">
-                        <span class="checkbox-text"> By Price</span> 
+                        <input type="checkbox" id="sortPrice" v-model="sortByPrice">
+                        <label for="sortPrice" class="checkbox-text">By Price</label>
                     </div>
                     <div class="criteria">
-                        <input type="checkbox" name="By Availability" id="" v-model="sortByAvailability">
-                        <span class="checkbox-text">By Availability</span> 
+                        <input type="checkbox" id="sortAvailability" v-model="sortByAvailability">
+                        <label for="sortAvailability" class="checkbox-text">By Availability</label>
                     </div>
-                    
+
                     <div class="order">
                         <div class="criteria">
-                            <input type="checkbox" name="ascending" id="" v-model="ascending">
-                            <span class="checkbox-text"> Ascending Order</span> 
+                            <input type="checkbox" id="orderAsc" v-model="ascending">
+                            <label for="orderAsc" class="checkbox-text">Ascending Order</label>
                         </div>
                         <div class="criteria">
-                            <input type="checkbox" name="descending" id="" v-model="descending">
-                            <span class="checkbox-text">Descending Order</span> 
+                            <input type="checkbox" id="orderDesc" v-model="descending">
+                            <label for="orderDesc" class="checkbox-text">Descending Order</label>
                         </div>
                     </div>
-                    
                 </div>
             </section>
-            
+
             <section class="main">
-                <div class="lessons" v-for="lesson in searchLessons">
+                <div class="lessons" v-for="lesson in searchLessons" :key="lesson.id">
                     <div class="lesson">
                         <div class="image-holder">
                             <img v-bind:src="lesson.image" class="lesson-image" alt="lesson image">
@@ -85,35 +80,30 @@
                             <p>{{lesson.description}}</p>
                             <p>Location: {{lesson.location}}</p>
                             <div class="price-stock">
-                                <p> DHS {{lesson.price}}</p>
-                                <!--the v-show directive means the button will only show if it evaluates to true-->
-                                <span>Available Stock: {{lesson.availability - cartCount(lesson.id)}}</span>
+                                <p>DHS {{lesson.price}}</p>
+                                <span>Available Stock: {{spacesLeft(lesson)}}</span>
                             </div>
-                            <!--this button will show for when the condition is true, if not, the disabled button shows-->
                             <button class="add-to-cart-button" v-on:click="addToCart(lesson)" :disabled="!canAddToCart(lesson)">Add to Cart</button>
+
+                            <!-- v-if must come first, then v-else-if, then v-else, as direct siblings -->
                             <div class="message">
-                                <span v-if="lesson.availability === cartCount(lesson.id)">Lesson Out of Stock</span>
-                                <span v-else-if="lesson.availability - cartCount(lesson.id)">
-                                        Hurry now!. {{lesson.availability - cartCount(lesson.id)}} Spaces Left!
-                                </span>
+                                <span v-if="spacesLeft(lesson) === 0">Sold out!</span>
+                                <span v-else-if="spacesLeft(lesson) <= 5">Hurry now! {{spacesLeft(lesson)}} Spaces Left!</span>
                                 <span v-else>Spaces Available! Buy Now!</span>
                             </div>
                         </div>
                     </div>
                 </div>
-           </section>
-           
-            
-            
-           
+            </section>
         </div>
+
+        <!-- Checkout page -->
         <div class="showCheckout" v-else>
-            
             <h2 class="title">{{checkout}}</h2>
-            <div class="cart-items" >
-                <div class="cart-item" v-for="lessonID in cartSet" :key="lessonID">
-                    
-                    <div v-if="lesson = lessons.find(lesson => lesson.id === lessonID)" class="item-data">
+
+            <div class="cart-items">
+                <div class="cart-item" v-for="lesson in cartLessons" :key="lesson.id">
+                    <div class="item-data">
                         <div class="item-image">
                             <img v-bind:src="lesson.image" class="lesson-image" alt="lesson image">
                         </div>
@@ -122,29 +112,31 @@
                             <p>{{lesson.description}}</p>
                             <p>{{lesson.location}}</p>
                             <div class="price-stock">
-                                <p> DHS {{lesson.price}}</p>
-                                <span>Available Stock: {{lesson.availability - cartCount(lesson.id)}}</span>
+                                <p>DHS {{lesson.price}}</p>
+                                <span>Quantity: {{cartCount(lesson.id)}}</span>
                             </div>
                         </div>
                     </div>
                     <div class="delete-from-cart">
-                        <button class="remove-from-cart" v-on:click="removeFromCart(lessonID)">Remove from Cart</button>
+                        <button class="remove-from-cart" v-on:click="removeFromCart(lesson.id)">Remove from Cart</button>
                     </div>
-                    
                 </div>
             </div>
-           <div class="checkout-details">
+
+            <div class="checkout-details">
                 <div class="details-input">
                     <h2 class="order-title">Please enter Order Details</h2>
-                    <label for="Name">Customer Name</label> <br>
-                    <input type="text" name="" id="" v-model="customerName"> <br>
-                    <span class="message" v-if="!isValidText()">Please enter your name (Alphabets Only) and not more than 15 characters.</span><br>
-                    <label for="Number">Phone Number</label> <br>
-                    <input type="number" name="" id="" v-model="customerNumber"> <br>
-                    <span class="message" v-if="!isValidNumber()">Please enter your complete Phone Number (Digits Only)</span>
+
+                    <label for="customerName">Customer Name</label> <br>
+                    <input type="text" id="customerName" v-model="customerName"> <br>
+                    <span class="message" v-if="!isValidText()">Please enter your name (letters only, 3 to 15 characters).</span><br>
+
+                    <label for="customerNumber">Phone Number</label> <br>
+                    <input type="tel" id="customerNumber" v-model="customerNumber"> <br>
+                    <span class="message" v-if="!isValidNumber()">Please enter your complete phone number (11 digits only).</span>
                 </div>
-                <button  v-if="showCheckoutButton()" v-on:click="checkOut" class="place-order">Buy Now!</button>
-                <button disabled v-else class="place-order">Buy Now!</button>
+
+                <button class="place-order" v-on:click="checkOut" :disabled="!showCheckoutButton()">Buy Now!</button>
             </div>
         </div>
     </div>
@@ -152,168 +144,136 @@
     <script>
         let app = new Vue({
             el: '#app',
-            data:{
-            // where you add key value pair
+            data: {
                 header: "Angela's Activity Room",
                 checkout: "Checkout Page",
                 lessons: lessons,
                 showLessons: true,
-                cart: [], // array to store items in shopping cart
-                sortedLessons: [...lessons],
+                cart: [],
+
                 sortByPrice: false,
                 sortBySubject: false,
                 sortByLocation: false,
+                sortByAvailability: false,
+
                 ascending: false,
                 descending: false,
+
                 searchTerm: '',
                 customerName: '',
                 customerNumber: ''
-
             },
             methods: {
-                // Method to determine if a lesson can be added to the cart
-                canAddToCart(lesson){
-                     // Check if the lesson availability is greater than the number of instances of the lesson already in the cart
-                    return lesson.availability > this.cartCount(lesson.id);
-                },
-                // Function to empty the cart. It does not take any parameters.
-                cartEmpty(){
-                    
-                },
-                cartCount(id){
-                     // Initialize a variable to hold the count of occurrences.   
+                // How many of this lesson are currently in the cart
+                cartCount(id) {
                     let count = 0;
-                    // Iterate through each item in the cart.
-                    for (let i=0; i<this.cart.length; i++){
-                        // Check if the current item matches the specified ID.
+                    for (let i = 0; i < this.cart.length; i++) {
                         if (this.cart[i] === id) {
-                            // If a match is found, increment the count.
                             count++;
                         }
                     }
-                    // Return the final count of occurrences of the specified item ID.
                     return count;
                 },
-                // Function to add a lesson to the cart
-                addToCart(lesson){
-                    // Push the ID of the lesson to the cart array
-                    this.cart.push(lesson.id);                 
+                // Spaces remaining after accounting for what's in the cart
+                spacesLeft(lesson) {
+                    return lesson.availability - this.cartCount(lesson.id);
                 },
-                // Function to remove a lesson from the cart
-                removeFromCart(lessonID){
-                    // Find the index of the lesson ID in the cart array
-                    let index = this.cart.indexOf(lessonID);
-                    // Check if the lesson ID exists in the cart
-                    if (index !== -1) {
-                        // If it exists, remove the lesson ID from the cart array
-                        this.cart.splice(index,1);
+                canAddToCart(lesson) {
+                    return this.spacesLeft(lesson) > 0;
+                },
+                addToCart(lesson) {
+                    if (this.canAddToCart(lesson)) {
+                        this.cart.push(lesson.id);
                     }
                 },
-                showCheckout() {
+                removeFromCart(lessonID) {
+                    let index = this.cart.indexOf(lessonID);
+                    if (index !== -1) {
+                        this.cart.splice(index, 1);
+                    }
+                },
+                toggleView() {
                     this.showLessons = !this.showLessons;
                 },
-                showCheckoutButton(){
-                    return this.isValidNumber() && this.isValidText()
+                showCheckoutButton() {
+                    return this.isValidNumber() && this.isValidText();
                 },
                 isValidNumber() {
-                    return /^[1-9]\d*$/.test(this.customerNumber) && this.customerNumber.length === 11;
-                    
+                    return /^\d{11}$/.test(this.customerNumber);
                 },
                 isValidText() {
-                    return /^[a-zA-Z]+$/.test(this.customerName) && (this.customerName.length >= 3 && this.customerName.length <= 12) ;
-                    
+                    const name = String(this.customerName).trim();
+                    return /^[a-zA-Z ]+$/.test(name) && name.length >= 3 && name.length <= 15;
                 },
-                isCartEmpty(){
-                    if (showCheckout && cartItemCount === null) {
-                        this.showLessons = true;
-                    }
-                },
-                checkOut(){
+                checkOut() {
+                    // Reduce the real stock for everything that was bought
+                    this.cart.forEach(id => {
+                        const lesson = this.lessons.find(l => l.id === id);
+                        if (lesson) {
+                            lesson.availability--;
+                        }
+                    });
                     alert("Order Placed");
-                    this.showLessons = !this.showLessons;    //Checkout Page//
-                    this.cart = [];
-                    this.customerName=''
-                    this.customerNumber='';
+                    this.cart = [];            // the cart watcher sends the user back to the lessons page
+                    this.showLessons = true;
+                    this.customerName = '';
+                    this.customerNumber = '';
                 },
-                sortLessons(){
-                    this.sortedLessons = [...this.lessons];
-                    if (this.sortBySubject) {
-                        this.sortedLessons.sort((a,b) => this.sortFunction(a.subject, b.subject));
-                    }
-                    if (this.sortByPrice) {
-                        this.sortedLessons.sort((a,b) => this.sortFunction(a.price, b.price));
-                    }
-                    if (this.sortByLocation){
-                        this.sortedLessons.sort((a,b) => this.sortFunction(a.location, b.location));
-                    }
-                    if (this.sortByAvailability) {
-                        this.sortedLessons.sort((a,b) => this.sortFunction(a.availability, b.availability))
-                    }
-                    if(this.descending){
-                        this.sortedLessons.reverse();
-                    }
-                },
-                sortFunction(a,b){
-                    if (typeof a ==='string' && typeof b === 'string') {
+                sortFunction(a, b) {
+                    if (typeof a === 'string' && typeof b === 'string') {
                         return a.localeCompare(b);
                     }
-                    else return a-b;
+                    return a - b;
                 }
+            },
+            computed: {
+                // Unique lessons in the cart (each shown once, with a quantity)
+                cartLessons() {
+                    return this.lessons.filter(lesson => this.cart.includes(lesson.id));
+                },
+                // Search + sort in one place, so it always reflects the current checkbox state
+                searchLessons() {
+                    const term = this.searchTerm.trim().toLowerCase();
+                    const result = this.lessons.filter(lesson =>
+                        lesson.subject.toLowerCase().includes(term)
+                    );
 
-            },
-            computed:{
-                // this is the computed property object
-                cartItemCount(){
-                    return this.cart.length || ""; // Return the length of the cart array, or an empty string if the cart is empty
-                },
-                 // Computed property to create a set from the items in the cart
-                cartSet(){
-                    return new Set(this.cart)
-                },
-                // Computed property to filter and search lessons based on a search term
-                searchLessons(){
-                    return this.sortedLessons.filter((lesson) => {
-                        // Filter lessons based on whether the subject includes the search term, ignoring case
-                        return lesson.subject.toLowerCase().includes(this.searchTerm.toLowerCase()) 
-                    })
-                },
-                
-            },
-            watch:{ // Defining a watch object within a Vue.js component
-                // Watching for changes in sortBySubject property
-                sortBySubject(){
-                     // When sortBySubject changes, invoke the sortLessons method
-                    this.sortLessons();
-                },
-                // Watching for changes in sortByPrice property
-                sortByPrice(){
-                     // When sortByPrice changes, invoke the sortLessons method
-                    this.sortLessons();
-                },
-                // Watching for changes in sortByLocation property
-                sortByLocation(){
-                     // When sortByLocation changes, invoke the sortLessons method
-                    this.sortLessons();
-                },
-                 // Watching for changes in sortByAvailability property
-                sortByAvailability(){
-                    // When sortByAvailability changes, invoke the sortLessons method
-                    this.sortLessons();
-                },
-                ascending(){
-                    if (this.ascending) {
-                        this.descending = false;
-                        this.sortLessons();
+                    // Chosen sort keys, in priority order
+                    const keys = [];
+                    if (this.sortBySubject) keys.push('subject');
+                    if (this.sortByLocation) keys.push('location');
+                    if (this.sortByPrice) keys.push('price');
+                    if (this.sortByAvailability) keys.push('availability');
+
+                    const direction = this.descending ? -1 : 1;
+                    if (keys.length) {
+                        result.sort((a, b) => {
+                            for (const key of keys) {
+                                const diff = this.sortFunction(a[key], b[key]);
+                                if (diff !== 0) return diff * direction;
+                            }
+                            return 0;
+                        });
                     }
+                    return result;
+                }
+            },
+            watch: {
+                // Keep ascending/descending mutually exclusive
+                ascending(value) {
+                    if (value) this.descending = false;
                 },
-                descending(){
-                    if (this.descending) {
-                        this.ascending = false;
-                        this.sortLessons();
+                descending(value) {
+                    if (value) this.ascending = false;
+                },
+                // If the cart becomes empty, don't leave the user stuck on the checkout page
+                cart() {
+                    if (this.cart.length === 0) {
+                        this.showLessons = true;
                     }
                 }
             }
-        })
+        });
     </script>
 </body>
 </html>
