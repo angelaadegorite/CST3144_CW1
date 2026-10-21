@@ -165,3 +165,145 @@ body{
     color: #777;
 }
 
+/* ADD TO CART */
+
+.add-to-cart-button{
+    margin-top: 10px;
+    padding: 10px 20px;
+    background: #ff85a2;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.add-to-cart-button:hover{
+    background: #ff5c8a;
+    transform: scale(1.05);
+}
+
+.message{
+    color: #2e8b57;
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+/* CHECKOUT PAGE */
+
+.showCheckout{
+    margin: 50px;
+}
+
+.title{
+    text-align: center;
+    color: #d87093;
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+}
+
+/* CART ITEMS */
+
+.cart-items{
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.cart-item{
+    background: white;
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    border-radius: 18px;
+    box-shadow: 0 5px 18px rgba(244,166,185,0.25);
+}
+
+.item-data{
+    display: flex;
+    gap: 25px;
+    align-items: center;
+}
+
+.cart-item .lesson-image{
+    width: 180px;
+    height: 180px;
+}
+
+.cart-item-description h2{
+    color: #d87093;
+    margin-bottom: 10px;
+}
+
+.cart-item-description p{
+    font-size: 18px;
+}
+
+/* REMOVE BUTTON */
+
+.remove-from-cart{
+    background: #ff5c8a;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    align-self: center;
+    transition: 0.3s;
+}
+
+.remove-from-cart:hover{
+    background: #e64975;
+}
+
+/* CHECKOUT DETAILS */
+
+.checkout-details{
+    margin-top: 50px;
+    text-align: center;
+}
+
+.details-input h2{
+    color: #d87093;
+    margin-bottom: 20px;
+}
+
+.details-input input{
+    width: 300px;
+    padding: 12px;
+    margin: 10px;
+    border: 1px solid #f4a6b9;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+.details-input input:focus{
+    outline: none;
+    border-color: #d87093;
+}
+
+/* PLACE ORDER */
+
+.place-order{
+    background: #d87093;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 18px;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.place-order:hover{
+    background: #c76084;
+    transform: scale(1.05);
+}
+
+
+
+
