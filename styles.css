@@ -9,3 +9,19 @@ body{
     background: #fff5f8;
     color: #444;
 }
+
+/* NAVIGATION */
+
+.navbar{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8c8dc;
+    padding: 25px 100px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+.navbar h1{
+    color: #d87093;
+    font-weight: 700;
+}
